@@ -716,7 +716,8 @@ async function renderDownloads(force) {
   await Promise.all(DOWNLOAD_SOURCES.map(async src => {
     if (dlCache.has(src.url)) return;
     try {
-      const res = await fetch(src.url + '?t=' + Date.now() + '&r=' + Math.random(), { cache: 'no-store' });
+      const finalUrl = src.url.startsWith('http') ? src.url : (DATA_BASE_URL + src.url);
+      const res = await fetch(finalUrl + '?t=' + Date.now() + '&r=' + Math.random(), { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const raw = await res.text();
       const cleaned = raw.replace(/[\u201c\u201d]/g, '"').replace(/[\u2018\u2019]/g, "'").replace(/：/g, ':').replace(/，/g, ',');
@@ -754,14 +755,20 @@ function showDownloadGroup(key) {
 
   const title = src.name ? `<div class="dl-group-title">${src.name}</div>` : '';
   const desc = src.description ? `<div class="dl-group-desc">${src.description}</div>` : '';
-  const cardsHtml = cards.map(i => `
+  const cardsHtml = cards.map(i => {
+    let iconUrl = i.icon || '';
+    if (iconUrl.startsWith('http://')) {
+      iconUrl = 'https://wsrv.nl/?url=' + encodeURIComponent(iconUrl);
+    }
+    return `
     <a class="download-card" href="${i.url || '#'}" target="_blank" rel="noopener noreferrer" data-name="${(i.name || '').toLowerCase()}">
-      <img src="${i.icon || ''}" onerror="this.style.visibility='hidden'" style="width:90%;max-width:100%;height:auto;aspect-ratio:1/1;border-radius:10px;margin-bottom:14px;object-fit:cover;background:#f0f3f8;">
+      <img src="${iconUrl}" onerror="this.style.visibility='hidden'" style="width:90%;max-width:100%;height:auto;aspect-ratio:1/1;border-radius:10px;margin-bottom:14px;object-fit:cover;background:#f0f3f8;">
       <div style="flex:1;width:100%;margin-top:auto;">
         <div style="font-size:.76rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${i.name || ''}</div>
         ${i.version ? `<div style="font-size:.6rem;color:#8b9eb0;margin-top:2px;">${i.version}</div>` : ''}
       </div>
-    </a>`).join('');
+    </a>`;
+  }).join('');
 
   body.innerHTML = `
     <div class="dl-group active">
