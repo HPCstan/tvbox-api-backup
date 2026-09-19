@@ -1,327 +1,327 @@
-海量接口搬运备份站
+﻿瘚琿??亙?祈?憭遢蝡?
 
-一个基于 GitHub Actions 自动化、Cloudflare Pages 静态托管，并结合 **Cloudflare R2 对象存储**的 TVBox 接口搬运备份项目。三套脚本每日定时抓取、解析、聚合各类 TVBox 接口与直播源，产物自动上传至 R2，前端页面实时读取展示，支持一键复制、搜索、多域名备份。
+銝銝芸鈭?GitHub Actions ?芸?loudflare Pages ??蝞∴?撟嗥???**Cloudflare R2 撖寡情摮**??TVBox ?亙?祈?憭遢憿寧??憟??祆??亙??嗆??圾????蝐?TVBox ?亙銝?剜?嚗漣?抵?其?隡 R2嚗?蝡舫△?Ｗ??嗉粉??蝷綽??舀?銝?桀??嗚?蝝Ｕ???憭遢??
 
-> **📢 重大架构升级：全面迁移至 Cloudflare R2 (2026-09-19)**
+> **? ?之?嗆??漣嚗?Ｚ?蝘餉 Cloudflare R2 (2026-09-19)**
 >
-> ### 🔍 1. 修改的原因 (Why)
-> *   **避免 Git 仓库膨胀**：原本架构每天会把抓取的 JSON/TXT 自动 `git commit` 回仓库，导致 `.git` 历史记录无限制膨胀，容易触碰 GitHub 容量上限。
-> *   **规避服务条款风险**：避免被 GitHub 判定滥用 Actions 作为纯数据存储爬虫。
-> *   **混合内容 (Mixed Content) 破图**：部分接口的图标为 `http://`，在 HTTPS 静态网页中会被浏览器安全策略拦截导致破图。
+> ### ?? 1. 靽格????(Why)
+> *   **?踹? Git 隞??刻?**嚗??祆??憭拐????? JSON/TXT ?芸 `git commit` ??摨?撖潸 `.git` ?霈啣????嗉?嚗捆?圻蝣?GitHub 摰寥?銝???
+> *   **閫??⊥狡憌**嚗?◤ GitHub ?文?皛亦 Actions 雿蛹蝥舀?桀??函?怒?
+> *   **瘛瑕??捆 (Mixed Content) ?游**嚗?????暹?銝?`http://`嚗 HTTPS ??憿萎葉隡◤瘚??典??函??交?芸紡?渡?整?
 > 
-> ### 🛠️ 2. 具体做法 (How)
-> *   **后端上传改写**：新增了 `python/upload_r2.py` 脚本，引入 `boto3`。GitHub Actions 抓取完数据后不再 `git push`，而是通过 S3 API 将生成的 `ry/`、`tvbox/` 目录及清单文件同步上传到 Cloudflare R2 Bucket。
-> *   **忽略产物**：修改 `.gitignore`，将生成的各种 JSON 和文本数据夹剔除 Git 追踪，保持源码仓库纯净。
-> *   **前端跨域读取**：修改了 `index.html`，新增全局常数 `DATA_BASE_URL` 指向 R2 的公开网域。所有的 `fetch()` 请求改为向 R2 绝对路径索取数据。
-> *   **图片代理修复**：在前端渲染下载卡片时，自动判断若图标 URL 为 `http://`，则加上 `https://wsrv.nl/?url=` 代理中转，完美解决 HTTPS 破图问题。
+> ### ??儭?2. ?瑚??? (How)
+> *   **?垢銝??孵?**嚗憓? `python/upload_r2.py` ?嚗???`boto3`?itHub Actions ??摰?桀?銝? `git push`嚗?? S3 API 撠??? `ry/`?tvbox/` ?桀?????隞嗅?甇乩?隡 Cloudflare R2 Bucket??
+> *   **敹賜鈭抒**嚗耨??`.gitignore`嚗?????蝘?JSON ???祆?桀允? Git 餈質葵嚗?????摨滲???
+> *   **?垢頝典?霂餃?**嚗耨?嫣? `index.html`嚗憓撅撣豢 `DATA_BASE_URL` ?? R2 ?撘蝵????? `fetch()` 霂瑟??嫣蛹??R2 蝏笆頝臬?蝝Ｗ??唳??
+> *   **?曄?隞??靽桀?**嚗?垢皜脫?銝蝸?∠??塚??芸?斗?亙??URL 銝?`http://`嚗??? `https://wsrv.nl/?url=` 隞??銝剛蓮嚗?蝢圾??HTTPS ?游?桅???
 > 
-> ### ✨ 3. 方便性与好处 (Benefits)
-> *   **纯净的源码**：GitHub 只用来管理爬虫代码与静态网页，再也没有海量的无意义数据 Commit，Clone 速度极大提升。
-> *   **无限且免费的存储**：Cloudflare R2 每月拥有 10GB 存储与百万级读取额度，完全满足文本/JSON 接口的流量需求。
-> *   **稳定与极速**：前端直连 R2，可以享受 Cloudflare 全球 CDN 的低延迟体验。
+> ### ??3. ?嫣噶?找?憟賢? (Benefits)
+> *   **蝥臬?????*嚗itHub ?芰?亦恣??思誨????憿蛛???瘝⊥?瘚琿??????唳 Commit嚗lone ?漲?之????
+> *   **??銝?韐寧?摮**嚗loudflare R2 瘥??交? 10GB 摮銝銝漣霂餃?憸漲嚗??冽說頞單???JSON ?亙????瘙?
+> *   **蝔喳?銝???*嚗?蝡舐餈?R2嚗隞乩澈??Cloudflare ?函? CDN ??撱嗉?雿???
 > 
-> ### ⚠️ 4. 对使用者的影响与配置改变 (Impact)
-> *   **需配置 R2 Bucket 与 CORS**：使用者必须在 Cloudflare 新建 Bucket 并开启公开访问 (如 `.r2.dev`)，且务必在设置中加入 CORS 规则允许 `GET` 跨域。
-> *   **需填写 GitHub Secrets**：工作流现依赖于 4 个环境变量，您必须在 Repo 设置中添加 `R2_ACCOUNT_ID`、`R2_ACCESS_KEY_ID`、`R2_SECRET_ACCESS_KEY` 与 `R2_BUCKET_NAME`。
-> *   **修改前端端点**：当您克隆本项目后，只需在 `index.html` 顶部修改 `DATA_BASE_URL` 为您自己的 R2 公开网域即可运行。
+> ### ?? 4. 撖嫣蝙?刻?敶勗?銝?蝵格??(Impact)
+> *   **??蔭 R2 Bucket 銝?CORS**嚗蝙?刻?憿餃 Cloudflare ?啣遣 Bucket 撟嗅??臬撘霈輸 (憒?`.r2.dev`)嚗??∪??刻挽蝵桐葉? CORS 閫??捂 `GET` 頝典???
+> *   **?憛怠? GitHub Secrets**嚗極雿??唬?韏? 4 銝芰憓????典?憿餃 Repo 霈曄蔭銝剜溶??`R2_ACCOUNT_ID`?R2_ACCESS_KEY_ID`?R2_SECRET_ACCESS_KEY` 銝?`R2_BUCKET_NAME`??
+> *   **靽格?垢蝡舐**嚗??典??憿寧???芷???`index.html` 憿園靽格 `DATA_BASE_URL` 銝箸?芸楛??R2 ?砍?蝵??喳餈???
 ---
 
-目录
+?桀?
 
-· 项目简介
-· 在线访问
-· 仓库结构
-· 自动化工作流
-· 三个脚本详解
-  · 脚本 A：ry下载器.py
-  · 脚本 B：api下载器.py
-  · 脚本 C：live下载器.py
-· 前端页面
-· 配置文件说明
-· 本地手动运行
-· 部署到 Cloudflare Pages
-· 常见问题与避坑
-· 配置修改速查
-· 一键校验清单
-· 声明
-
----
-
-项目简介
-
-本项目把互联网上公开的 TVBox 接口资源进行批量搬运、备份与聚合，通过 GitHub Actions 定时抓取并提交到仓库，再由 Cloudflare Pages 静态托管前端页面，实现：
-
-· 接口备份：90+ 条点播接口，每条接口提供 1~5 个镜像线路，自动选通。
-· 直播聚合：从所有点播接口的 lives 字段提取直播源，穿透套壳后生成播放列表。
-· 下载资源：批量抓取本地包/下载资源，落到 ry/ 目录。
-· 多域名备份：前端提供三个互为备份的访问域名，任一可用。
-· 静态托管：纯前端页面，无需后端，部署简单，访问快。
+繚 憿寧蝞隞?
+繚 ?函瑪霈輸
+繚 隞?蝏?
+繚 ?芸?極雿?
+繚 銝葵?霂西圾
+  繚 ? A嚗y銝蝸??py
+  繚 ? B嚗pi銝蝸??py
+  繚 ? C嚗ive銝蝸??py
+繚 ?垢憿菟
+繚 ?蔭?辣霂湔?
+繚 ?砍?餈?
+繚 ?函蔡??Cloudflare Pages
+繚 撣貉??桅?銝??
+繚 ?蔭靽格?
+繚 銝?格撉???
+繚 憯唳?
 
 ---
 
-在线访问
+憿寧蝞隞?
 
-域名 用途
-https://0.12yue.de5.net 主域名（备份一线）
-https://0.cdz.qzz.io 备份二线
-https://0.wdzb.eu.cc 备份三线
+?祇★?格?鈭?蝵??砍???TVBox ?亙韏?餈??寥??祈???隞賭???嚗? GitHub Actions 摰??撟嗆?鈭文隞?嚗???Cloudflare Pages ??蝞∪?蝡舫△?ｇ?摰嚗?
 
-三个域名指向同一份静态站点，互为备份。
+繚 ?亙憭遢嚗?0+ ?∠?剜???瘥?亙?? 1~5 銝芷??瑪頝荔??芸??
+繚 ?湔??嚗????剜??? lives 摮挾???湔皞?蝛輸?憯喳????剜?”??
+繚 銝蝸韏?嚗????啣?/銝蝸韏?嚗??ry/ ?桀???
+繚 憭???隞踝??垢??銝葵鈭蛹憭遢?挪?桀???隞颱??舐??
+繚 ??蝞∴?蝥臬?蝡舫△?ｇ????垢嚗蝵脩???霈輸敹怒?
 
 ---
 
-仓库结构
+?函瑪霈輸
+
+?? ?券?
+https://0.12yue.de5.net 銝餃???憭遢銝蝥選?
+https://0.cdz.qzz.io 憭遢鈭瑪
+https://0.wdzb.eu.cc 憭遢銝瑪
+
+銝葵??????隞賡????對?鈭蛹憭遢??
+
+---
+
+隞?蝏?
 
 ```
 tvbox-api-backup/
-├── .github/
-│   └── workflows/
-│       ├── ry下载器.yml                 ⭐ 工作流A：每日解析 ry
-│       ├── api下载器.yml                ⭐ 工作流B：每两日抓取 tvbox 接口
-│       └── live下载器.yml               ⭐ 工作流C：每日聚合直播源
-│
-├── python/                               ⭐ 脚本统一目录
-│   ├── ry下载器.py                      ⭐ 脚本A
-│   ├── api下载器.py                     ⭐ 脚本B
-│   └── live下载器.py                    ⭐ 脚本C
-│
-├── rylinks.txt                           ⭐ 脚本A 配置（名称,URL，文本格式）
-├── apilinks.txt                          ⭐ 脚本B 配置（新格式：名称,URL1,URL2,...）
-├── api_list.json                         ⭐ 脚本B 老格式兜底（可选）
-│
-├── ry/                                   ← 脚本A 产物
-├── tvbox/                                ← 脚本B 产物
-│   ├── *.json                            ← 各线路接口文件
-│   ├── 海量直播线路.json                  ← 脚本C 聚合锚点
-│   └── live/                             ← 脚本C 播放列表输出
-│       ├── xxx.m3u
-│       └── xxx.txt
-├── livelist.txt                          ← 脚本C 索引清单
-├── list.txt                              ← 脚本B 接口清单
-├── SUMMARY.txt                           ← 脚本B 运行摘要
-│
-├── config.json                           → 前端下载资源源配置
-├── index.html                            → 前端主页面
-├── style.css / js/                       → 前端资源
-└── README.md                             → 本文件
+??? .github/
+??  ??? workflows/
+??      ??? ry銝蝸??yml                 潃?撌乩?瘚嚗??亥圾??ry
+??      ??? api銝蝸??yml                潃?撌乩?瘚嚗?銝斗?? tvbox ?亙
+??      ??? live銝蝸??yml               潃?撌乩?瘚嚗??亥???剜?
+??
+??? python/                               潃??蝏??桀?
+??  ??? ry銝蝸??py                      潃??A
+??  ??? api銝蝸??py                     潃??B
+??  ??? live銝蝸??py                    潃??C
+??
+??? rylinks.txt                           潃??A ?蔭嚗?蝘?URL嚗??祆撘?
+??? apilinks.txt                          潃??B ?蔭嚗?澆?嚗?蝘?URL1,URL2,...嚗?
+??? api_list.json                         潃??B ?撘?摨??舫?
+??
+??? ry/                                   ???A 鈭抒
+??? tvbox/                                ???B 鈭抒
+??  ??? *.json                            ???瑪頝舀???隞?
+??  ??? 瘚琿??湔蝥輯楝.json                  ???C ???
+??  ??? live/                             ???C ?剜?”颲
+??      ??? xxx.m3u
+??      ??? xxx.txt
+??? livelist.txt                          ???C 蝝Ｗ?皜?
+??? list.txt                              ???B ?亙皜?
+??? SUMMARY.txt                           ???B 餈???
+??
+??? config.json                           ???垢銝蝸韏?皞?蝵?
+??? index.html                            ???垢銝駁△??
+??? style.css / js/                       ???垢韏?
+??? README.md                             ???祆?隞?
 ```
 
 ---
 
-自动化工作流
+?芸?極雿?
 
-三个工作流位于 .github/workflows/，推送到 main 分支后 GitHub 自动识别。三者共用 concurrency: tvbox-repo-write，串行执行，避免并发 push 冲突。
+銝葵撌乩?瘚?鈭?.github/workflows/嚗? main ???GitHub ?芸霂?????concurrency: tvbox-repo-write嚗葡銵銵??踹?撟嗅? push ?脩???
 
-工作流 Cron（UTC） 北京时间 功能 产物
-ry下载器.yml 0 17 * * * 每日 01:00 每日解析 ry ry/
-api下载器.yml 5 16 * * * 每两日 00:05 每两日抓取接口（奇偶日 gate） tvbox/*.json、list.txt、SUMMARY.txt
-live下载器.yml 0 18 * * * 每日 02:00 每日聚合直播源 tvbox/live/、livelist.txt、tvbox/海量直播线路.json
+撌乩?瘚?Cron嚗TC嚗??漪?園 ? 鈭抒
+ry銝蝸??yml 0 17 * * * 瘥 01:00 瘥閫?? ry ry/
+api銝蝸??yml 5 16 * * * 瘥舅??00:05 瘥舅?交?????憟??gate嚗?tvbox/*.json?ist.txt?UMMARY.txt
+live銝蝸??yml 0 18 * * * 瘥 02:00 瘥???湔皞?tvbox/live/?ivelist.txt?vbox/瘚琿??湔蝥輯楝.json
 
-工作流特性
+撌乩?瘚??
 
-· 奇偶日 gate：api下载器.yml 只在 UTC 奇日运行，偶日自动跳过，实现"两日一更"。
-· 手动触发：所有工作流支持 workflow_dispatch，可勾选 force 强制跳过日期判断，勾选 debug 输出详细日志。
-· 依赖安装：pip install requests urllib3。
-· 提交产物：git pull --rebase --autostash → git add → git commit → git push，只用 git add 明确指定目录，绝不 git add -A。
+繚 憟??gate嚗pi銝蝸??yml ?芸 UTC 憟餈?嚗?亥?刻歲餈?摰"銝斗銝????
+繚 ?閫血?嚗??極雿??舀? workflow_dispatch嚗?暸?force 撘箏頝唾??交??斗嚗??debug 颲霂衣??亙???
+繚 靘?摰?嚗ip install requests urllib3??
+繚 ?漱鈭抒嚗it pull --rebase --autostash ??git add ??git commit ??git push嚗??git add ?＆???桀?嚗?銝?git add -A??
 
 ---
 
-三个脚本详解
+銝葵?霂西圾
 
-脚本 A：ry下载器.py
+? A嚗y銝蝸??py
 
-作用
+雿
 
-批量下载「本地包/下载资源」类接口，解析 JSON，把结果落到 ry/ 目录。每次运行强制覆盖旧产物。
+?寥?銝蝸??啣?/銝蝸韏??掩?亙嚗圾??JSON嚗?蝏??賢 ry/ ?桀???甈∟?銵撩?嗉??鈭抒??
 
-配置：rylinks.txt（仓库根，文本格式）
+?蔭嚗ylinks.txt嚗?摨嚗??祆撘?
 
 ```
-潇洒下载, https://9877.kstore.space/single.json
-奇奇下载, http://bd.qiqiv.cn/666.json
-菠菜园下载, https://0.12yue.de5.net/tvbox/x/lib/菠菜园下载.json
-柒豪下载, https://raw.gitcode.com/qihao/qihaoyyds/raw/main/版本.json
+瞏?銝蝸, https://9877.kstore.space/single.json
+憟?銝蝸, http://bd.qiqiv.cn/666.json
+???凋?頧? https://0.12yue.de5.net/tvbox/x/lib/???凋?頧?json
+?悸銝蝸, https://raw.gitcode.com/qihao/qihaoyyds/raw/main/?.json
 ```
 
-语法规则：
+霂剜?閫?嚗?
 
-· 每行一条，格式 名称, URL（英文逗号分隔，两边可有空格）
-· # 开头 = 注释
-· 名称可省略，脚本自动取域名作文件名
-· 支持 file://（本地）和 raw:base64（内联）用于调试
+繚 瘥?銝?∴??澆? ?妍, URL嚗???嚗舅颲孵?征?潘?
+繚 # 撘憭?= 瘜券?
+繚 ?妍?舐??伐???芸?????辣??
+繚 ?舀? file://嚗?堆???raw:base64嚗????其?靚?
 
-运行方式
+餈??孵?
 
 ```bash
-python3 python/ry下载器.py
-python3 python/ry下载器.py -c /path/to/other.txt   # 指定配置
-python3 python/ry下载器.py -l "URL" --name 测试      # 单链接调试
+python3 python/ry銝蝸??py
+python3 python/ry銝蝸??py -c /path/to/other.txt   # ???蔭
+python3 python/ry銝蝸??py -l "URL" --name 瘚?      # ??亥?霂?
 ```
 
 ---
 
-脚本 B：api下载器.py
+? B嚗pi銝蝸??py
 
-作用
+雿
 
-抓取 TVBox 的「接口线路」（饭太硬、嗷呜、肥猫 等 90+ 线路），每个接口可带多镜像（同一行多个 URL），自动选通，生成 tvbox/*.json + list.txt + SUMMARY.txt。
+?? TVBox ???瑪頝胯?擖剖云蝖研???蝑?90+ 蝥輯楝嚗?瘥葵?亙?臬蒂憭?????銵?銝?URL嚗??芸???? tvbox/*.json + list.txt + SUMMARY.txt??
 
-配置加载优先级
+?蔭?蝸隡?蝥?
 
-脚本按以下顺序查找配置，找到即用：
+??誑銝◇摨?暸?蝵殷??曉?喟嚗?
 
-优先级 入口 格式 说明
-1 --config <路径> 按扩展名判断 .json 走老格式，其余走新 txt
-2 apilinks.txt 新 txt 列表 优先，存在即用
-3 api_list.json 老 JSON 兜底，新文件不存在时才用
-4 api_list.py Python 模块 最老式兜底
+隡?蝥??亙 ?澆? 霂湔?
+1 --config <頝臬?> ?撅??斗 .json 韏啗撘??嗡?韏唳 txt
+2 apilinks.txt ??txt ?” 隡?嚗??典??
+3 api_list.json ??JSON ??嚗?辣銝??冽?
+4 api_list.py Python 璅∪? ?????
 
-新格式：apilinks.txt（仓库根，推荐）
+?唳撘?apilinks.txt嚗?摨嚗??
 
-每行一条接口，名称,URL1,URL2,...，多 URL 用逗号分隔，# 开头为注释。
+瘥?銝?⊥????妍,URL1,URL2,...嚗? URL ?券??嚗? 撘憭港蛹瘜券???
 
 ```txt
-# 单 URL
-更新专用接口, https://0.12yue.de5.net/tvbox/更新专用接口.json
-菠菜pro, https://0.12yue.de5.net/5/x4pro.json
+# ??URL
+?湔銝?亙, https://0.12yue.de5.net/tvbox/?湔銝?亙.json
+??pro, https://0.12yue.de5.net/5/x4pro.json
 
-# 多 URL（同一名称多个镜像，脚本会自动分组去重）
-饭太硬, http://www.饭太硬.net/tv, http://www.饭太硬.art/tv, http://fty.xxooo.cf/tv, http://fty.888484.xyz/tv, http://fty.333232.xyz/tv
-嗷呜, http://www.英格里希嗷呜.top/tv, https://9763.kstore.vip/aowu.json, http://itv666.cc/aowu/config.webp
-潇洒, https://9877.kstore.space/single.json, https://9877.kstore.space/AnotherD/api.json, https://9877.kstore.space/one.json, https://9877.kstore.space/ONE/one.json
+# 憭?URL嚗?銝?妍憭葵??嚗??砌??芸???駁?嚗?
+擖剖云蝖? http://www.擖剖云蝖?net/tv, http://www.擖剖云蝖?art/tv, http://fty.xxooo.cf/tv, http://fty.888484.xyz/tv, http://fty.333232.xyz/tv
+?瑕?, http://www.?望???瑕?.top/tv, https://9763.kstore.vip/aowu.json, http://itv666.cc/aowu/config.webp
+瞏?, https://9877.kstore.space/single.json, https://9877.kstore.space/AnotherD/api.json, https://9877.kstore.space/one.json, https://9877.kstore.space/ONE/one.json
 ```
 
-规则：
+閫?嚗?
 
-· 第一个字段是名称，后面全部是 URL
-· URL 数量不限，1 个或多个都行
-· 空行、# 开头的行会被忽略
+繚 蝚砌?銝芸?畾菜?妍嚗??Ｗ?冽 URL
+繚 URL ?圈?銝?嚗? 銝芣?憭葵?質?
+繚 蝛箄??? 撘憭渡?銵?鋡怠蕭??
 
-老格式：api_list.json（兜底）
+?撘?api_list.json嚗?摨?
 
-新文件不存在时才会读它，格式与原来完全一致：
+?唳?隞嗡?摮?嗆?隡粉摰??澆?銝??亙??其??湛?
 
 ```json
 {
   "API_LIST": [
-    ["更新专用接口", "https://0.12yue.de5.net/tvbox/更新专用接口.json"],
-    ["菠菜pro", "https://0.12yue.de5.net/5/x4pro.json"]
+    ["?湔銝?亙", "https://0.12yue.de5.net/tvbox/?湔銝?亙.json"],
+    ["??pro", "https://0.12yue.de5.net/5/x4pro.json"]
   ],
   "API_MIRRORS": {
-    "饭太硬": [
-      "http://www.饭太硬.net/tv",
-      "http://www.饭太硬.art/tv"
+    "擖剖云蝖?: [
+      "http://www.擖剖云蝖?net/tv",
+      "http://www.擖剖云蝖?art/tv"
     ]
   }
 }
 ```
 
-运行方式
+餈??孵?
 
 ```bash
-python3 python/api下载器.py
-python3 python/api下载器.py --debug
-python3 python/api下载器.py --check-config
-python3 python/api下载器.py --config my_links.txt
-python3 python/api下载器.py --config my_api_list.json
+python3 python/api銝蝸??py
+python3 python/api銝蝸??py --debug
+python3 python/api銝蝸??py --check-config
+python3 python/api銝蝸??py --config my_links.txt
+python3 python/api銝蝸??py --config my_api_list.json
 ```
 
 ---
 
-脚本 C：live下载器.py
+? C嚗ive銝蝸??py
 
-作用
+雿
 
-从 TVBox 接口 JSON（tvbox/*.json）的 lives 数组中批量提取直播源，模拟 TVBox 客户端环境下载播放列表（自动穿透套壳），生成 tvbox/live/ 下的播放列表文件，维护 livelist.txt 索引。
+隞?TVBox ?亙 JSON嚗vbox/*.json嚗? lives ?啁?銝剜????剜?嚗芋??TVBox 摰Ｘ蝡舐憓?頧賣?曉?銵剁??芸蝛輸?憯喉?嚗???tvbox/live/ 銝??剜?”?辣嚗輕??livelist.txt 蝝Ｗ???
 
-核心原则：对外文件名锚定原始条目（不受套壳跳转影响），保证外部访问路径长期稳定。
+?詨???嚗笆憭?隞嗅??????∠嚗???憯唾歲頧砍蔣??嚗?霂??刻挪?株楝敺?迅摰?
 
-运行流程
+餈?瘚?
 
-1. 扫描提取：遍历 tvbox/*.json → 读取 lives → 提取有 name 且有 url 的条目（URL 去重）
-2. 聚合命名：名称冲突自动编号 xxx → xxx2线 → xxx3线，写入 tvbox/海量直播线路.json 锚点
-3. 批量下载：模拟 TVBox 请求，套壳检测（最多递归 5 层），写出播放列表
-4. 生成索引：更新 livelist.txt（旧记录保留，成功记录覆盖）
+1. ?急???嚗???tvbox/*.json ??霂餃? lives ??????name 銝? url ??殷?URL ?駁?嚗?
+2. ???賢?嚗?蝘啣蝒?函???xxx ??xxx2蝥???xxx3蝥選?? tvbox/瘚琿??湔蝥輯楝.json ?
+3. ?寥?銝蝸嚗芋??TVBox 霂瑟?嚗?憯單?瘚??憭? 5 撅?嚗??箸?曉?銵?
+4. ??蝝Ｗ?嚗??livelist.txt嚗霈啣?靽?嚗??扇敶???
 
-运行方式
+餈??孵?
 
 ```bash
-python3 python/live下载器.py
-python3 python/live下载器.py --debug
-python3 python/live下载器.py --force
+python3 python/live銝蝸??py
+python3 python/live銝蝸??py --debug
+python3 python/live銝蝸??py --force
 ```
 
 ---
 
-前端页面
+?垢憿菟
 
-前端为纯静态页面，位于仓库根目录（index.html、style.css、js/、config.json），部署在 Cloudflare Pages。
+?垢銝箇滲?△?ｇ?雿?隞??寧敶?index.html?tyle.css?s/?onfig.json嚗??函蔡??Cloudflare Pages??
 
-页面结构
+憿菟蝏?
 
-页面顶部提供模式切换按钮，右上角是搜索框，下方是导航标签（点播 / 直播 / 下载 / 关于），主体区根据标签展示对应面板。
+憿菟憿園??璅∪???嚗銝??舀?蝝Ｘ?嚗??寞撖潸?倌嚗??/ ?湔 / 銝蝸 / ?喃?嚗?銝颱??箸?格?蝑曉?蝷箏笆摨?踴?
 
-1. 点播面板
+1. ?寞?Ｘ
 
-读取 list.txt，按接口权重排序，每条接口展示：
+霂餃? list.txt嚗??亙????嚗??⊥???蝷綽?
 
-· 原始线路：接口的原生 URL
-· 备份一线 / 备份二线 / 备份三线：基于三个备份域名拼出的 URL
+繚 ??蝥輯楝嚗????? URL
+繚 憭遢銝蝥?/ 憭遢鈭瑪 / 憭遢銝瑪嚗鈭?銝芸?隞賢???箇? URL
 
-每条 URL 右侧提供「复制」按钮，一键复制到剪贴板。
+瘥 URL ?喃儒?????嗚??殷?銝?桀??嗅?芾斐?踴?
 
-2. 直播面板
+2. ?湔?Ｘ
 
-顶部是「海量直播聚合多线路专用接口」聚合块，提供 海量直播线路.json 的复制按钮。
+憿園?胯絲??剛???蝥輯楝銝?亙????嚗?靘?瘚琿??湔蝥輯楝.json ???嗆??柴?
 
-下方读取 livelist.txt，每条直播源展示：
+銝霂餃? livelist.txt嚗??∠?剜?撅內嚗?
 
-· 来源、UA 信息
-· 原始线路
-· 备份一线 / 二线 / 三线
+繚 ?交??A 靽⊥
+繚 ??蝥輯楝
+繚 憭遢銝蝥?/ 鈭瑪 / 銝瑪
 
-3. 下载面板
+3. 銝蝸?Ｘ
 
-读取 config.json 中配置的 downloadSources，逐个拉取并渲染下载卡片（图标、名称、版本、跳转链接）。
+霂餃? config.json 銝剝?蝵桃? downloadSources嚗葵??撟嗆葡??頧賢???暹???蝘啜??研歲頧祇?伐???
 
-4. 关于面板
+4. ?喃??Ｘ
 
-展示三个备份域名、声明与联系方式（QQ 群、Telegram 群）。
+撅內銝葵憭遢???ㄟ???頂?孵?嚗Q 蝢扎elegram 蝢歹???
 
-模式切换
+璅∪??
 
-模式 说明
-简洁模式（默认） 只显示点播面板，隐藏导航标签与直播/下载/关于面板，搜索框置于顶部
-全能模式 显示完整导航标签与所有面板，搜索框置于标签下方
+璅∪? 霂湔?
+蝞瘣芋撘?暺恕嚗??芣蝷箇?剝?選???撖潸?倌銝??銝蝸/?喃??Ｘ嚗?蝝Ｘ?蝵桐?憿園
+?刻璅∪? ?曄內摰撖潸?倌銝???選??揣獢蔭鈭?蝑曆???
 
-模式选择保存在 localStorage，刷新后保持。
+璅∪??靽???localStorage嚗?啣?靽???
 
-搜索功能
+?揣?
 
-搜索框对所有面板生效，按接口/直播/下载卡片的 data-name 做模糊匹配，实时过滤。
+?揣獢笆???輻???????湔/銝蝸?∠???data-name ?芋蝟??摰餈誘??
 
-复制功能
+憭?
 
-全局事件委托，所有 .copy-btn 点击后复制 data-url，优先使用 navigator.clipboard，降级到 execCommand('copy')，复制成功后按钮变绿显示「✅ 已复制」。
+?典?鈭辣憪?嚗???.copy-btn ?孵????data-url嚗??蝙??navigator.clipboard嚗?蝥批 execCommand('copy')嚗??嗆?????遛?曄內?? 撌脣??嗚?
 
 ---
 
-配置文件说明
+?蔭?辣霂湔?
 
-文件 位置 格式 归属 说明
-rylinks.txt 仓库根 文本 名称, URL 脚本A ry 下载源
-apilinks.txt 仓库根 文本 名称,URL1,URL2,... 脚本B 接口列表（新格式，优先）
-api_list.json 仓库根 JSON 脚本B 接口列表（老格式，兜底）
-config.json 仓库根 JSON 前端 下载资源源配置
+?辣 雿蔭 ?澆? 敶? 霂湔?
+rylinks.txt 隞???? ?妍, URL ?A ry 銝蝸皞?
+apilinks.txt 隞???? ?妍,URL1,URL2,... ?B ?亙?”嚗?澆?嚗???
+api_list.json 隞???JSON ?B ?亙?”嚗撘???嚗?
+config.json 隞???JSON ?垢 銝蝸韏?皞?蝵?
 
-config.json 示例
+config.json 蝷箔?
 
 ```json
 {
   "downloadSources": [
     {
-      "name": "应用市场",
-      "description": "TVBox 应用合集",
+      "name": "摨撣",
+      "description": "TVBox 摨??",
       "url": "https://cdn.jsdelivr.net/gh/SimonWang911/simonwangsub@main/appupdate/appupdate.json"
     }
   ]
@@ -330,111 +330,111 @@ config.json 示例
 
 ---
 
-本地手动运行
+?砍?餈?
 
 ```bash
-# Step 1: 克隆并进入仓库根
-git clone https://github.com/lubin776/tvbox-api-backup.git
+# Step 1: ??撟嗉??乩?摨
+git clone https://github.com/HPCstan/tvbox-api-backup.git
 cd tvbox-api-backup
 
-# Step 2: 安装依赖
+# Step 2: 摰?靘?
 pip3 install -r requirements.txt
 
-# Step 3-5: 依次运行三个脚本
-python3 python/ry下载器.py --debug
-python3 python/api下载器.py --debug
-python3 python/live下载器.py --debug
+# Step 3-5: 靘活餈?銝葵?
+python3 python/ry銝蝸??py --debug
+python3 python/api銝蝸??py --debug
+python3 python/live銝蝸??py --debug
 
-# Step 6: 验证并提交
+# Step 6: 撉?撟嗆?鈭?
 ls ry/ tvbox/ tvbox/live/ list.txt SUMMARY.txt livelist.txt
-git add . && git commit -m "test: 本地验证" && git push
+git add . && git commit -m "test: ?砍撉?" && git push
 ```
 
-注意：脚本靠 CWD = 仓库根 定位配置和产物，务必在仓库根执行。
+瘜冽?嚗??祇? CWD = 隞???摰??蔭?漣?抬??∪??其?摨?扯???
 
 ---
 
-部署到 Cloudflare Pages
+?函蔡??Cloudflare Pages
 
-1. 登录 Cloudflare Dashboard，进入 Pages。
-2. 创建项目，关联 GitHub 仓库 lubin776/tvbox-api-backup。
-3. 构建设置：
-   · Framework preset：None
-   · Build command：留空
-   · Build output directory：/（仓库根）
-4. 保存并部署，Cloudflare 会分配一个 *.pages.dev 域名。
-5. 在 Custom domains 中绑定 0.12yue.de5.net、0.cdz.qzz.io、0.wdzb.eu.cc 三个域名。
-6. 每次 GitHub Actions 提交产物后，Cloudflare Pages 会自动重新部署（或配置 Webhook 触发）。
-
----
-
-常见问题与避坑
-
-现象 原因 解决
-所有条目失败 网络不通 / UA 被封 加 --debug，检查 UA 池
-套壳未展开 返回内容 URL > 1 条 正常行为，多条视为播放列表本身
-文件名含特殊字符 净化规则未覆盖 检查 sanitize_stem() 正则
-livelist 旧记录丢失 名称匹配失败 旧记录按 stem 匹配，大改名会丢失
-Actions 页面看不到工作流 .yml 不在 .github/workflows/ 检查路径
-requests ImportError 依赖未装 检查 pip install requests 步骤日志
-读不到新配置 apilinks.txt 不在仓库根 确认路径与文件名拼写
-YAML 缩进错误 缩进不一致 uses/run 与 name 同级对齐
-并发 push 冲突 三工作流同时 push 共享锁 + git pull --rebase
-产物互相覆盖 git add -A 误用 严格按协作矩阵 git add
+1. ?餃? Cloudflare Dashboard嚗???Pages??
+2. ?遣憿寧嚗??GitHub 隞? HPCstan/tvbox-api-backup??
+3. ?遣霈曄蔭嚗?
+   繚 Framework preset嚗one
+   繚 Build command嚗?蝛?
+   繚 Build output directory嚗?嚗?摨嚗?
+4. 靽?撟園蝵莎?Cloudflare 隡???銝?*.pages.dev ????
+5. ??Custom domains 銝剔?摰?0.12yue.de5.net??.cdz.qzz.io??.wdzb.eu.cc 銝葵????
+6. 瘥活 GitHub Actions ?漱鈭抒??Cloudflare Pages 隡?券??圈蝵莎???蝵?Webhook 閫血?嚗?
 
 ---
 
-配置修改速查
+撣貉??桅?銝??
 
-想做什么 改哪里 需重新部署
-增删 ry 下载链接 编辑 rylinks.txt ❌ 自动生效
-改 ry 超时/UA python/ry下载器.py 常量区 ✅ push 后
-增删 tvbox 接口 编辑 apilinks.txt ❌ 自动生效
-调整镜像 在 apilinks.txt 对应行追加 URL ❌ 自动生效
-改调度时间 对应 .yml 的 cron ✅ push 后
-改产物目录 脚本 OUTPUT_DIR + 工作流 git add ✅ push 后
-改下载资源源 编辑 config.json ❌ 自动生效
-改前端展示 编辑 index.html / style.css ✅ push 后
+?啗情 ?? 閫?
+???桀仃韐?蝵?銝?/ UA 鋡怠? ??--debug嚗???UA 瘙?
+憟ㄢ?芸?撘 餈??捆 URL > 1 ??甇?虜銵蛹嚗??∟?銝箸?曉?銵冽頨?
+?辣??寞?摮泵 ????閬? 璉??sanitize_stem() 甇??
+livelist ?扯扇敶腺憭??妍?寥?憭梯揖 ?扯扇敶? stem ?寥?嚗之?孵?隡腺憭?
+Actions 憿菟???啣極雿? .yml 銝 .github/workflows/ 璉?亥楝敺?
+requests ImportError 靘??芾? 璉??pip install requests 甇仿炊?亙?
+霂颱??唳?蔭 apilinks.txt 銝隞???蝖株恕頝臬?銝?隞嗅??澆?
+YAML 蝻抵??秤 蝻抵?銝???uses/run 銝?name ?漣撖寥?
+撟嗅? push ?脩? 銝極雿?? push ?曹澈??+ git pull --rebase
+鈭抒鈭閬? git add -A 霂舐 銝交??雿??git add
 
 ---
 
-一键校验清单
+?蔭靽格?
+
+?喳?隞銋??孵?????函蔡
+憓? ry 銝蝸?暹 蝻? rylinks.txt ???芸??
+??ry 頞/UA python/ry銝蝸??py 撣賊?????push ??
+憓? tvbox ?亙 蝻? apilinks.txt ???芸??
+靚?? ??apilinks.txt 撖孵?銵蕭??URL ???芸??
+?寡?摨行??撖孵? .yml ??cron ??push ??
+?嫣漣?拍敶?? OUTPUT_DIR + 撌乩?瘚?git add ??push ??
+?嫣?頧質?皞? 蝻? config.json ???芸??
+?孵?蝡臬?蝷?蝻? index.html / style.css ??push ??
+
+---
+
+銝?格撉???
 
 ```bash
-# 在仓库根执行
-echo "=== 1. 结构检查 ==="
-ls .github/workflows/ry下载器.yml .github/workflows/api下载器.yml .github/workflows/live下载器.yml
-ls python/ry下载器.py python/api下载器.py python/live下载器.py
+# ?其?摨?扯?
+echo "=== 1. 蝏?璉??==="
+ls .github/workflows/ry銝蝸??yml .github/workflows/api銝蝸??yml .github/workflows/live銝蝸??yml
+ls python/ry銝蝸??py python/api銝蝸??py python/live銝蝸??py
 ls rylinks.txt apilinks.txt config.json index.html
 
-echo "=== 2. YAML 语法校验 ==="
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ry下载器.yml')); print('ry OK')"
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/api下载器.yml')); print('api OK')"
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/live下载器.yml')); print('live OK')"
+echo "=== 2. YAML 霂剜??⊿? ==="
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ry銝蝸??yml')); print('ry OK')"
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/api銝蝸??yml')); print('api OK')"
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/live銝蝸??yml')); print('live OK')"
 
-echo "=== 3. 配置校验 ==="
-python3 python/api下载器.py --check-config
+echo "=== 3. ?蔭?⊿? ==="
+python3 python/api銝蝸??py --check-config
 
-echo "=== 4. 本地试跑 ==="
-python3 python/ry下载器.py
-python3 python/api下载器.py
-python3 python/live下载器.py
+echo "=== 4. ?砍霂? ==="
+python3 python/ry銝蝸??py
+python3 python/api銝蝸??py
+python3 python/live銝蝸??py
 
 ls ry/ tvbox/ tvbox/live/ list.txt SUMMARY.txt livelist.txt
 ```
 
-全部通过 → 部署成功。
+?券?? ???函蔡????
 
 ---
 
-声明
+憯唳?
 
-本站接口资源由【误道者】整理。所有资源均来自互联网，版权归原作者所有。仅供测试学习使用，请勿用于违法及商业用途，请勿付费购买。如涉及侵权，请联系删除。
+?祉??亙韏??晞秤?????皞??亥鈭?蝵???敶?雿???靘?霂郎銋蝙?剁?霂瑕?其?餈???銝??霂瑕隞晶韐凋僭??瘨?靘菜?嚗窈?頂???
 
-· QQ 交流群：1067685939
-· Telegram 群组：https://t.me/+nrWtFerPAfcwOTg9
+繚 QQ 鈭斗?蝢歹?1067685939
+繚 Telegram 蝢斤?嚗ttps://t.me/+nrWtFerPAfcwOTg9
 
 ---
 
-项目：海量接口搬运备份站
-仓库：https://github.com/lubin776/tvbox-api-backup
+憿寧嚗絲???餈?隞賜?
+隞?嚗ttps://github.com/HPCstan/tvbox-api-backup
