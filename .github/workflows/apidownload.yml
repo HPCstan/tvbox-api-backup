@@ -62,12 +62,13 @@ jobs:
           ${{ github.event.inputs.force == 'true' && 'ARGS="$ARGS --force"' || '' }}
           python python/tvbox_get_api.py $ARGS
 
-      - name: 提交产物
+      - name: 上传产物至 R2
         if: steps.date_check.outputs.run == 'true'
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
         run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull --rebase --autostash
-          git add tvbox/ list.txt
-          git commit -m "chore(api): 两日一更接口更新 $(TZ='CST-8' date +%Y-%m-%d)" || echo "no changes"
-          git push
+          pip install boto3
+          python python/upload_r2.py

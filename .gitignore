@@ -4,3 +4,11 @@ data/
 __pycache__/
 
 
+
+# Generated Data files for R2 upload
+ry/
+tvbox/
+list.txt
+livelist.txt
+SUMMARY.txt
+

@@ -1,0 +1,13 @@
+{
+  "rules": [
+    {
+      "id": "AllowPublicFetch",
+      "allowed": {
+        "origins": ["*"],
+        "methods": ["GET", "HEAD"],
+        "headers": ["*"]
+      },
+      "maxAgeSeconds": 3000
+    }
+  ]
+}

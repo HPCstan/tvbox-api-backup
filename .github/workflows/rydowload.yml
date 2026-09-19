@@ -46,11 +46,12 @@ jobs:
           ${{ github.event.inputs.force == 'true' && 'ARGS="$ARGS --force"' || '' }}
           python python/ry下载器.py $ARGS
 
-      - name: 提交产物
+      - name: 上传产物至 R2
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
         run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull --rebase --autostash
-          git add ry/
-          git commit -m "chore(ry): 每日更新本地包 $(TZ='CST-8' date +%Y-%m-%d)" || echo "no changes"
-          git push
+          pip install boto3
+          python python/upload_r2.py

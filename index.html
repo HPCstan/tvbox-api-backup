@@ -456,9 +456,10 @@ body.simple-mode #api-panel { display:block !important; }
 </div>
 
 <script>
-/* ============================================================
-   完整 JS 逻辑（含刷新记住面板 + localStorage，已修复启动恢复）
-   ============================================================ */
+// === R2 外部儲存網域設定 ===
+// 這是我們剛剛由 Cloudflare 系統為您自動開啟的 R2 公開存取網址
+const DATA_BASE_URL = 'https://pub-e1b54d42b65242d2812b542c8bb48f15.r2.dev/';
+
 
 const MODE_KEY = 'site_mode';
 const TAB_KEY = 'current_tab';
@@ -607,7 +608,7 @@ function renderContributors(list) {
 /* ===== 点播 ===== */
 async function fetchListText() {
   if(rawListText!==null) return rawListText;
-  const res = await fetch('list.txt?t='+Date.now()+'&r='+Math.random(), {cache:'no-store',headers:{'Cache-Control':'no-cache'}});
+  const res = await fetch(DATA_BASE_URL + 'list.txt?t='+Date.now()+'&r='+Math.random(), {cache:'no-store',headers:{'Cache-Control':'no-cache'}});
   if(!res.ok) throw new Error('HTTP '+res.status);
   rawListText = await res.text(); return rawListText;
 }
@@ -644,7 +645,7 @@ function renderApi() {
 /* ===== 直播 ===== */
 async function fetchLiveText() {
   if(rawLiveText!==null) return rawLiveText;
-  const res = await fetch('livelist.txt?t='+Date.now(), {cache:'no-store'});
+  const res = await fetch(DATA_BASE_URL + 'livelist.txt?t='+Date.now(), {cache:'no-store'});
   if(!res.ok) throw new Error('HTTP '+res.status);
   rawLiveText = await res.text(); return rawLiveText;
 }
