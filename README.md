@@ -1,7 +1,29 @@
 海量接口搬运备份站
 
-一个基于 GitHub Actions 自动化 + Cloudflare Pages 静态托管的 TVBox 接口搬运备份项目。三套脚本每日定时抓取、解析、聚合各类 TVBox 接口与直播源，产物自动提交回仓库，前端页面实时读取展示，支持一键复制、搜索、多域名备份。
+一个基于 GitHub Actions 自动化、Cloudflare Pages 静态托管，并结合 **Cloudflare R2 对象存储**的 TVBox 接口搬运备份项目。三套脚本每日定时抓取、解析、聚合各类 TVBox 接口与直播源，产物自动上传至 R2，前端页面实时读取展示，支持一键复制、搜索、多域名备份。
 
+> **📢 重大架构升级：全面迁移至 Cloudflare R2 (2026-09-19)**
+>
+> ### 🔍 1. 修改的原因 (Why)
+> *   **避免 Git 仓库膨胀**：原本架构每天会把抓取的 JSON/TXT 自动 `git commit` 回仓库，导致 `.git` 历史记录无限制膨胀，容易触碰 GitHub 容量上限。
+> *   **规避服务条款风险**：避免被 GitHub 判定滥用 Actions 作为纯数据存储爬虫。
+> *   **混合内容 (Mixed Content) 破图**：部分接口的图标为 `http://`，在 HTTPS 静态网页中会被浏览器安全策略拦截导致破图。
+> 
+> ### 🛠️ 2. 具体做法 (How)
+> *   **后端上传改写**：新增了 `python/upload_r2.py` 脚本，引入 `boto3`。GitHub Actions 抓取完数据后不再 `git push`，而是通过 S3 API 将生成的 `ry/`、`tvbox/` 目录及清单文件同步上传到 Cloudflare R2 Bucket。
+> *   **忽略产物**：修改 `.gitignore`，将生成的各种 JSON 和文本数据夹剔除 Git 追踪，保持源码仓库纯净。
+> *   **前端跨域读取**：修改了 `index.html`，新增全局常数 `DATA_BASE_URL` 指向 R2 的公开网域。所有的 `fetch()` 请求改为向 R2 绝对路径索取数据。
+> *   **图片代理修复**：在前端渲染下载卡片时，自动判断若图标 URL 为 `http://`，则加上 `https://wsrv.nl/?url=` 代理中转，完美解决 HTTPS 破图问题。
+> 
+> ### ✨ 3. 方便性与好处 (Benefits)
+> *   **纯净的源码**：GitHub 只用来管理爬虫代码与静态网页，再也没有海量的无意义数据 Commit，Clone 速度极大提升。
+> *   **无限且免费的存储**：Cloudflare R2 每月拥有 10GB 存储与百万级读取额度，完全满足文本/JSON 接口的流量需求。
+> *   **稳定与极速**：前端直连 R2，可以享受 Cloudflare 全球 CDN 的低延迟体验。
+> 
+> ### ⚠️ 4. 对使用者的影响与配置改变 (Impact)
+> *   **需配置 R2 Bucket 与 CORS**：使用者必须在 Cloudflare 新建 Bucket 并开启公开访问 (如 `.r2.dev`)，且务必在设置中加入 CORS 规则允许 `GET` 跨域。
+> *   **需填写 GitHub Secrets**：工作流现依赖于 4 个环境变量，您必须在 Repo 设置中添加 `R2_ACCOUNT_ID`、`R2_ACCESS_KEY_ID`、`R2_SECRET_ACCESS_KEY` 与 `R2_BUCKET_NAME`。
+> *   **修改前端端点**：当您克隆本项目后，只需在 `index.html` 顶部修改 `DATA_BASE_URL` 为您自己的 R2 公开网域即可运行。
 ---
 
 目录
